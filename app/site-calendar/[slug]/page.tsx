@@ -20,10 +20,12 @@ import {
   isToday,
   isSameMonth,
 } from "date-fns";
+import { es } from "date-fns/locale";
 import { Loader2, MapPin, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PasswordGate } from "@/components/shared/password-gate";
+import { BilingualText } from "@/components/shared/bilingual-text";
 
 type View = "day" | "agenda";
 
@@ -165,7 +167,8 @@ export default function SiteCalendarDisplayPage() {
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-[#003A65]">{site.name}</h1>
             <p className="text-muted-foreground flex items-center gap-1 mt-1">
-              <MapPin className="h-4 w-4" /> Safety Office Calendar
+              <MapPin className="h-4 w-4" />
+              <BilingualText en="Safety Office Calendar" es="Calendario de la Oficina de Seguridad" />
             </p>
           </div>
         </div>
@@ -247,15 +250,25 @@ export default function SiteCalendarDisplayPage() {
 
                   <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                     <h2 className="text-2xl font-bold text-[#003A65] mb-4">
-                      {selectedDate ? format(selectedDate, "EEEE, MMMM d") : ""}
+                      {selectedDate && (
+                        <BilingualText
+                          en={format(selectedDate, "EEEE, MMMM d")}
+                          es={format(selectedDate, "EEEE, d 'de' MMMM", { locale: es })}
+                        />
+                      )}
                     </h2>
                     <div className="space-y-4">
                       {selectedItems.length === 0 ? (
-                        <p className="text-muted-foreground">No events for this day.</p>
+                        <p className="text-muted-foreground">
+                          <BilingualText en="No events for this day." es="No hay eventos para este día." />
+                        </p>
                       ) : (
                         selectedItems.map((item) => (
                           <div key={item.id} className="bg-[#F4F7FA] rounded-lg p-4 border-l-4 border-[#005A9C]">
                             <div className="font-bold text-lg text-[#003A65]">{item.title}</div>
+                            {item.titleEs && (
+                              <div className="text-base text-[#005A9C]/80 italic mt-0.5">{item.titleEs}</div>
+                            )}
                             {item.time && (
                               <div className="text-sm text-[#005A9C] font-medium mt-1 flex items-center gap-1">
                                 <Clock className="h-4 w-4" /> {item.time}
@@ -263,6 +276,9 @@ export default function SiteCalendarDisplayPage() {
                             )}
                             {item.description && (
                               <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{item.description}</p>
+                            )}
+                            {item.descriptionEs && (
+                              <p className="text-sm text-[#005A9C]/70 mt-1 whitespace-pre-wrap italic">{item.descriptionEs}</p>
                             )}
                           </div>
                         ))
@@ -281,22 +297,32 @@ export default function SiteCalendarDisplayPage() {
                 className="space-y-4"
               >
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-2xl font-bold text-[#003A65] mb-6">Weekly Agenda</h2>
+                  <h2 className="text-2xl font-bold text-[#003A65] mb-6">
+                    <BilingualText en="Weekly Agenda" es="Agenda Semanal" />
+                  </h2>
                   <div className="space-y-6">
                     {weekDays.map((day) => {
                       const dayItems = itemsForDate(day);
                       return (
                         <div key={day.toISOString()} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
                           <h3 className="text-lg font-bold text-[#005A9C] mb-3">
-                            {format(day, "EEEE, MMMM d")}
+                            <BilingualText
+                              en={format(day, "EEEE, MMMM d")}
+                              es={format(day, "EEEE, d 'de' MMMM", { locale: es })}
+                            />
                           </h3>
                           <div className="space-y-3">
                             {dayItems.length === 0 ? (
-                              <p className="text-sm text-muted-foreground">No events scheduled.</p>
+                              <p className="text-sm text-muted-foreground">
+                                <BilingualText en="No events scheduled." es="No hay eventos programados." />
+                              </p>
                             ) : (
                               dayItems.map((item) => (
                                 <div key={item.id} className="bg-[#F4F7FA] rounded-lg p-4">
                                   <div className="font-bold text-[#003A65]">{item.title}</div>
+                                  {item.titleEs && (
+                                    <div className="text-base text-[#005A9C]/80 italic mt-0.5">{item.titleEs}</div>
+                                  )}
                                   {item.time && (
                                     <div className="text-sm text-[#005A9C] font-medium mt-1 flex items-center gap-1">
                                       <Clock className="h-4 w-4" /> {item.time}
@@ -304,6 +330,9 @@ export default function SiteCalendarDisplayPage() {
                                   )}
                                   {item.description && (
                                     <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{item.description}</p>
+                                  )}
+                                  {item.descriptionEs && (
+                                    <p className="text-sm text-[#005A9C]/70 mt-1 whitespace-pre-wrap italic">{item.descriptionEs}</p>
                                   )}
                                 </div>
                               ))

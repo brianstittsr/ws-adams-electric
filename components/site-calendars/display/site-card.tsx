@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { MapPin, Building2, HardHat } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { BilingualText } from "@/components/shared/bilingual-text";
 import type { SiteCalendarDoc } from "@/lib/schema";
 
 interface SiteCardProps {
@@ -31,7 +32,12 @@ export function SiteCard({ site, onClick, index }: SiteCardProps) {
             <Icon className="h-8 w-8 text-[#005A9C]" />
           </div>
           <h2 className="text-xl font-bold text-gray-900">{site.name}</h2>
-          <p className="text-sm text-muted-foreground">Click to view the safety office calendar</p>
+          <p className="text-sm text-muted-foreground">
+            <BilingualText
+              en="Click to view the safety office calendar"
+              es="Haga clic para ver el calendario de la oficina de seguridad"
+            />
+          </p>
         </CardContent>
       </Card>
     </motion.div>

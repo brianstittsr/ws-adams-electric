@@ -1361,7 +1361,9 @@ export interface SiteCalendarItemDoc {
   id: string;
   siteId: string;
   title: string;
+  titleEs?: string;
   description?: string;
+  descriptionEs?: string;
   date: Timestamp;
   time?: string;
   location?: string;

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { COLLECTIONS, type SiteCalendarDoc, type SiteCalendarItemDoc } from "@/lib/schema";
-import { collection, query, orderBy, onSnapshot, addDoc, deleteDoc, doc, Timestamp } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, addDoc, updateDoc, deleteDoc, doc, Timestamp } from "firebase/firestore";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { format, addDays, startOfDay, parseISO } from "date-fns";
@@ -30,12 +30,15 @@ export default function CalendarAdminPage() {
   // Form state
   const [newItem, setNewItem] = useState({
     title: "",
+    titleEs: "",
     date: format(new Date(), "yyyy-MM-dd"),
     time: "08:00",
     description: "",
+    descriptionEs: "",
   });
   const [newSite, setNewSite] = useState({ name: "", slug: "", pin: "0000" });
   const [saving, setSaving] = useState(false);
+  const [itemEdits, setItemEdits] = useState<Record<string, Partial<SiteCalendarItemDoc>>>({});
 
   useEffect(() => {
     if (typeof window !== "undefined" && localStorage.getItem("calendar-admin-bypass") === "true") {
@@ -93,7 +96,9 @@ export default function CalendarAdminPage() {
       await addDoc(collection(db, COLLECTIONS.SITECALENDARITEMS), {
         siteId: selectedSiteId,
         title: newItem.title,
+        titleEs: newItem.titleEs || "",
         description: newItem.description,
+        descriptionEs: newItem.descriptionEs || "",
         date: Timestamp.fromDate(startOfDay(parseISO(newItem.date))),
         time: newItem.time,
         order: 1,
@@ -101,7 +106,7 @@ export default function CalendarAdminPage() {
         updatedAt: Timestamp.now(),
       });
       toast.success("Item added");
-      setNewItem({ title: "", date: format(new Date(), "yyyy-MM-dd"), time: "08:00", description: "" });
+      setNewItem({ title: "", titleEs: "", date: format(new Date(), "yyyy-MM-dd"), time: "08:00", description: "", descriptionEs: "" });
     } catch (error) {
       console.error(error);
       toast.error("Failed to add item");
@@ -119,6 +124,29 @@ export default function CalendarAdminPage() {
       console.error(error);
       toast.error("Failed to delete item");
     }
+  }
+
+  async function handleUpdateItem(itemId: string) {
+    if (!db) return;
+    const edits = itemEdits[itemId];
+    if (!edits) return;
+    try {
+      await updateDoc(doc(db, COLLECTIONS.SITECALENDARITEMS, itemId), {
+        ...edits,
+        updatedAt: Timestamp.now(),
+      });
+      toast.success("Item updated");
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to update item");
+    }
+  }
+
+  function setItemEdit(itemId: string, updates: Partial<SiteCalendarItemDoc>) {
+    setItemEdits((prev) => ({
+      ...prev,
+      [itemId]: { ...prev[itemId], ...updates },
+    }));
   }
 
   async function handleAddSite(e: React.FormEvent) {
@@ -257,6 +285,14 @@ export default function CalendarAdminPage() {
                           required
                         />
                       </div>
+                      <div className="md:col-span-2">
+                        <Label>Title (Spanish)</Label>
+                        <Input
+                          value={newItem.titleEs}
+                          onChange={(e) => setNewItem({ ...newItem, titleEs: e.target.value })}
+                          placeholder="p. ej., Reunión de Seguridad"
+                        />
+                      </div>
                       <div>
                         <Label>Date</Label>
                         <Input
@@ -285,6 +321,15 @@ export default function CalendarAdminPage() {
                         />
                       </div>
                       <div className="md:col-span-2">
+                        <Label>Description (Spanish)</Label>
+                        <Textarea
+                          value={newItem.descriptionEs}
+                          onChange={(e) => setNewItem({ ...newItem, descriptionEs: e.target.value })}
+                          placeholder="Detalles opcionales..."
+                          rows={3}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
                         <Button type="submit" disabled={saving} className="bg-[#005A9C] hover:bg-[#003A65]">
                           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
                           Save Item
@@ -304,23 +349,59 @@ export default function CalendarAdminPage() {
                     ) : (
                       <div className="space-y-3">
                         {items.map((item) => (
-                          <div key={item.id} className="flex items-start justify-between p-3 bg-white border rounded-lg">
-                            <div>
-                              <div className="font-semibold text-[#003A65]">{item.title}</div>
+                          <div key={item.id} className="p-3 bg-white border rounded-lg space-y-3">
+                            <div className="flex items-start justify-between gap-3">
                               <div className="text-xs text-muted-foreground">
-                                {format(item.date.toDate(), "MMM d, yyyy")} at {item.time}
+                                {format(item.date.toDate(), "MMM d, yyyy")} at {item.time || "—"}
                               </div>
-                              {item.description && (
-                                <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
-                              )}
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleUpdateItem(item.id)}
+                                  title="Save changes"
+                                >
+                                  <Save className="h-4 w-4 text-[#005A9C]" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleDeleteItem(item.id)}
+                                  title="Delete item"
+                                >
+                                  <Trash2 className="h-4 w-4 text-destructive" />
+                                </Button>
+                              </div>
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDeleteItem(item.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
+                            <div className="grid grid-cols-1 gap-2">
+                              <Input
+                                value={itemEdits[item.id]?.title ?? item.title}
+                                onChange={(e) => setItemEdit(item.id, { title: e.target.value })}
+                                placeholder="Title"
+                              />
+                              <Input
+                                value={itemEdits[item.id]?.titleEs ?? item.titleEs ?? ""}
+                                onChange={(e) => setItemEdit(item.id, { titleEs: e.target.value })}
+                                placeholder="Título (español)"
+                              />
+                              <Textarea
+                                value={itemEdits[item.id]?.description ?? item.description ?? ""}
+                                onChange={(e) => setItemEdit(item.id, { description: e.target.value })}
+                                placeholder="Description"
+                                rows={2}
+                              />
+                              <Textarea
+                                value={itemEdits[item.id]?.descriptionEs ?? item.descriptionEs ?? ""}
+                                onChange={(e) => setItemEdit(item.id, { descriptionEs: e.target.value })}
+                                placeholder="Descripción (español)"
+                                rows={2}
+                              />
+                              <Input
+                                type="time"
+                                value={itemEdits[item.id]?.time ?? item.time ?? ""}
+                                onChange={(e) => setItemEdit(item.id, { time: e.target.value })}
+                              />
+                            </div>
                           </div>
                         ))}
                       </div>

@@ -15,6 +15,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { BilingualText } from "@/components/shared/bilingual-text";
 import { Loader2, Lock, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import type { SiteCalendarDoc } from "@/lib/schema";
@@ -155,10 +156,16 @@ export function SiteChooser() {
               />
             </motion.div>
             <h1 className="text-3xl md:text-4xl font-bold text-[#003A65] mb-3">
-              Safety Office Calendar
+              <BilingualText
+                en="Safety Office Calendar"
+                es="Calendario de la Oficina de Seguridad"
+              />
             </h1>
             <p className="text-muted-foreground text-lg">
-              Select a job site to view its calendar
+              <BilingualText
+                en="Select a job site to view its calendar"
+                es="Seleccione un sitio de trabajo para ver su calendario"
+              />
             </p>
           </div>
 
@@ -169,7 +176,9 @@ export function SiteChooser() {
           ) : error ? (
             <p className="text-center text-destructive">{error}</p>
           ) : sites.length === 0 ? (
-            <p className="text-center text-muted-foreground">No site calendars found.</p>
+            <p className="text-center text-muted-foreground">
+              <BilingualText en="No site calendars found." es="No se encontraron calendarios del sitio." />
+            </p>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {sites.map((site, index) => (
@@ -191,10 +200,13 @@ export function SiteChooser() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Lock className="h-4 w-4" />
-              Enter PIN
+              <BilingualText en="Enter PIN" es="Ingrese el PIN" />
             </DialogTitle>
             <DialogDescription>
-              Enter the 4-digit PIN for {selectedSite?.name}.
+              <BilingualText
+                en={`Enter the 4-digit PIN for ${selectedSite?.name}.`}
+                es={`Ingrese el PIN de 4 d\u00EDgitos para ${selectedSite?.name}.`}
+              />
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handlePinSubmit} className="space-y-4 mt-2">
@@ -217,7 +229,7 @@ export function SiteChooser() {
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  View Calendar <ArrowRight className="h-4 w-4 ml-2" />
+                  <BilingualText en="View Calendar" es="Ver Calendario" /> <ArrowRight className="h-4 w-4 ml-2" />
                 </>
               )}
             </Button>

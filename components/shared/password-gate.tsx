@@ -9,12 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
+import { BilingualText } from "@/components/shared/bilingual-text";
 
 interface PasswordGateProps {
   storageKey: string;
   siteName?: string | null;
   title?: string;
   subtitle?: string;
+  subtitleEs?: string;
   onAuthenticated: () => void;
 }
 
@@ -26,6 +28,7 @@ export function PasswordGate({
   siteName,
   title = "Calendar Access",
   subtitle = "Enter the credentials to continue.",
+  subtitleEs = "Ingrese las credenciales para continuar.",
   onAuthenticated,
 }: PasswordGateProps) {
   const [phase, setPhase] = useState<"splash" | "login">("splash");
@@ -83,7 +86,9 @@ export function PasswordGate({
               <h1 className="mt-6 text-2xl md:text-3xl font-bold text-[#003A65]">{siteName}</h1>
             )}
             {subtitle && (
-              <p className="mt-2 text-muted-foreground text-sm">{subtitle}</p>
+              <p className="mt-2 text-muted-foreground text-sm">
+                <BilingualText en={subtitle} es={subtitleEs} />
+              </p>
             )}
           </motion.div>
         ) : (
@@ -108,12 +113,16 @@ export function PasswordGate({
                   />
                 </div>
                 <CardTitle className="text-2xl text-[#003A65]">{title}</CardTitle>
-                <CardDescription>{subtitle}</CardDescription>
+                <CardDescription>
+                  <BilingualText en={subtitle} es={subtitleEs} />
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="gate-email">Email</Label>
+                    <Label htmlFor="gate-email">
+                      <BilingualText en="Email" es="Correo electrónico" />
+                    </Label>
                     <Input
                       id="gate-email"
                       type="email"
@@ -125,7 +134,9 @@ export function PasswordGate({
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="gate-password">Password</Label>
+                    <Label htmlFor="gate-password">
+                      <BilingualText en="Password" es="Contraseña" />
+                    </Label>
                     <Input
                       id="gate-password"
                       type="password"
@@ -145,7 +156,8 @@ export function PasswordGate({
                       <Loader2 className="h-4 w-4 animate-spin" />
                     ) : (
                       <>
-                        <Lock className="h-4 w-4 mr-2" /> Sign In
+                        <Lock className="h-4 w-4 mr-2" />
+                        <BilingualText en="Sign In" es="Iniciar sesión" />
                       </>
                     )}
                   </Button>
