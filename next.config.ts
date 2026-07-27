@@ -55,7 +55,7 @@ const nextConfig: NextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; img-src 'self' https: data: blob:; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://widgets.leadconnectorhq.com; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://*.googleapis.com https://*.google.com https://*.pexels.com https://*.unsplash.com https://services.leadconnectorhq.com https://widgets.leadconnectorhq.com; frame-src 'self' https://widgets.leadconnectorhq.com;",
+            value: "default-src 'self'; img-src 'self' https: data: blob:; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://*.googleapis.com https://*.google.com https://*.pexels.com https://*.unsplash.com https://services.leadconnectorhq.com; frame-src 'self';",
           },
         ],
       },
