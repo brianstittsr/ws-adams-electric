@@ -26,6 +26,10 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PasswordGate } from "@/components/shared/password-gate";
 import { BilingualText } from "@/components/shared/bilingual-text";
+import {
+  getCalendarTitleEs,
+  getCalendarDescriptionEs,
+} from "@/components/site-calendars/calendar-translations";
 
 type View = "day" | "agenda";
 
@@ -266,8 +270,10 @@ export default function SiteCalendarDisplayPage() {
                         selectedItems.map((item) => (
                           <div key={item.id} className="bg-[#F4F7FA] rounded-lg p-4 border-l-4 border-[#005A9C]">
                             <div className="font-bold text-lg text-[#003A65]">{item.title}</div>
-                            {item.titleEs && (
-                              <div className="text-base text-[#005A9C]/80 italic mt-0.5">{item.titleEs}</div>
+                            {(item.titleEs || getCalendarTitleEs(item.title)) && (
+                              <div className="text-base text-[#005A9C]/80 italic mt-0.5">
+                                {item.titleEs || getCalendarTitleEs(item.title)}
+                              </div>
                             )}
                             {item.time && (
                               <div className="text-sm text-[#005A9C] font-medium mt-1 flex items-center gap-1">
@@ -277,8 +283,10 @@ export default function SiteCalendarDisplayPage() {
                             {item.description && (
                               <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{item.description}</p>
                             )}
-                            {item.descriptionEs && (
-                              <p className="text-sm text-[#005A9C]/70 mt-1 whitespace-pre-wrap italic">{item.descriptionEs}</p>
+                            {(item.descriptionEs || getCalendarDescriptionEs(item.description)) && (
+                              <p className="text-sm text-[#005A9C]/70 mt-1 whitespace-pre-wrap italic">
+                                {item.descriptionEs || getCalendarDescriptionEs(item.description)}
+                              </p>
                             )}
                           </div>
                         ))
@@ -320,8 +328,10 @@ export default function SiteCalendarDisplayPage() {
                               dayItems.map((item) => (
                                 <div key={item.id} className="bg-[#F4F7FA] rounded-lg p-4">
                                   <div className="font-bold text-[#003A65]">{item.title}</div>
-                                  {item.titleEs && (
-                                    <div className="text-base text-[#005A9C]/80 italic mt-0.5">{item.titleEs}</div>
+                                  {(item.titleEs || getCalendarTitleEs(item.title)) && (
+                                    <div className="text-base text-[#005A9C]/80 italic mt-0.5">
+                                      {item.titleEs || getCalendarTitleEs(item.title)}
+                                    </div>
                                   )}
                                   {item.time && (
                                     <div className="text-sm text-[#005A9C] font-medium mt-1 flex items-center gap-1">
@@ -331,8 +341,10 @@ export default function SiteCalendarDisplayPage() {
                                   {item.description && (
                                     <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{item.description}</p>
                                   )}
-                                  {item.descriptionEs && (
-                                    <p className="text-sm text-[#005A9C]/70 mt-1 whitespace-pre-wrap italic">{item.descriptionEs}</p>
+                                  {(item.descriptionEs || getCalendarDescriptionEs(item.description)) && (
+                                    <p className="text-sm text-[#005A9C]/70 mt-1 whitespace-pre-wrap italic">
+                                      {item.descriptionEs || getCalendarDescriptionEs(item.description)}
+                                    </p>
                                   )}
                                 </div>
                               ))

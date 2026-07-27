@@ -36,11 +36,11 @@ const demoSites = [
 ];
 
 const sampleEntries = [
-  { title: "Safety Stand-Down", description: "Morning safety briefing and PPE check", time: "06:00" },
-  { title: "Fall Protection Delivery", description: "$25k of fall protection gear arriving — check mailbox", time: "08:00" },
-  { title: "Foreman Meeting", description: "Review weekly schedule and manpower", time: "10:00" },
-  { title: "Tool Box Talk", description: "Lockout/tagout refresher with crew", time: "13:00" },
-  { title: "Site Inspection", description: "Superintendent walk-through with safety lead", time: "15:00" },
+  { title: "Safety Stand-Down", titleEs: "Reunión de Seguridad", description: "Morning safety briefing and PPE check", descriptionEs: "Charla matutina de seguridad y revisión de EPP", time: "06:00" },
+  { title: "Fall Protection Delivery", titleEs: "Entrega de Protección contra Caídas", description: "$25k of fall protection gear arriving — check mailbox", descriptionEs: "Llega equipo de protección contra caídas por valor de $25,000 — revisar buzón", time: "08:00" },
+  { title: "Foreman Meeting", titleEs: "Reunión de Capataces", description: "Review weekly schedule and manpower", descriptionEs: "Revisar la programación semanal y la mano de obra", time: "10:00" },
+  { title: "Tool Box Talk", titleEs: "Charla de Caja de Herramientas", description: "Lockout/tagout refresher with crew", descriptionEs: "Recordatorio de bloqueo/etiquetado con la cuadrilla", time: "13:00" },
+  { title: "Site Inspection", titleEs: "Inspección del Sitio", description: "Superintendent walk-through with safety lead", descriptionEs: "Recorrido del superintendente con el líder de seguridad", time: "15:00" },
 ];
 
 function midnightTimestamp(dateString) {
@@ -117,7 +117,9 @@ async function seedCalendarItems() {
       await itemRef.set({
         siteId,
         title: entry.title,
+        titleEs: entry.titleEs || "",
         description: entry.description,
+        descriptionEs: entry.descriptionEs || "",
         date: midnightTimestamp(dateString),
         time: entry.time,
         location: site.name,
