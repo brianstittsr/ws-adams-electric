@@ -23,6 +23,7 @@ import {
 import { Loader2, MapPin, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SiteCalendarPasswordGate } from "./password-gate";
 
 type View = "day" | "agenda";
 
@@ -35,6 +36,7 @@ export default function SiteCalendarDisplayPage() {
   const [today, setToday] = useState<Date | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [currentMonth, setCurrentMonth] = useState<Date | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
 
   useEffect(() => {
     const now = new Date();
@@ -44,14 +46,22 @@ export default function SiteCalendarDisplayPage() {
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined" || !slug) return;
+    if (localStorage.getItem(`site-calendar-auth-${slug}`) === "true") {
+      setAuthenticated(true);
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    if (!authenticated) return;
     const timer = setInterval(() => {
       setView((current) => (current === "day" ? "agenda" : "day"));
     }, 10000);
     return () => clearInterval(timer);
-  }, []);
+  }, [authenticated]);
 
   useEffect(() => {
-    if (!db || !slug) return;
+    if (!authenticated || !db || !slug) return;
     const firestore = db;
 
     let unsubscribe: (() => void) | undefined;
@@ -82,7 +92,7 @@ export default function SiteCalendarDisplayPage() {
 
     loadSite();
     return () => unsubscribe?.();
-  }, [slug]);
+  }, [authenticated, slug]);
 
   const weekDays = useMemo<Date[]>(() => {
     if (!today) return [];
@@ -103,6 +113,16 @@ export default function SiteCalendarDisplayPage() {
     const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 });
     return eachDayOfInterval({ start, end });
   }, [currentMonth]);
+
+  if (!authenticated) {
+    return (
+      <SiteCalendarPasswordGate
+        slug={slug}
+        siteName={site?.name}
+        onAuthenticated={() => setAuthenticated(true)}
+      />
+    );
+  }
 
   if (loading || !today || !site) {
     return (

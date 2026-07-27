@@ -1,7 +1,7 @@
 require("dotenv").config({ path: ".env.local" });
 
-const EMAIL = process.env.CALENDAR_ADMIN_EMAIL;
-const PASSWORD = process.env.CALENDAR_ADMIN_PASSWORD;
+const EMAIL = process.env.CALENDAR_ADMIN_EMAIL || "jeff@ae.com";
+const PASSWORD = process.env.CALENDAR_ADMIN_PASSWORD || "Yfhk9r76q@@12345";
 const DISPLAY_NAME = process.env.CALENDAR_ADMIN_DISPLAY_NAME || "Jeff";
 
 const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
