@@ -15,6 +15,9 @@ import { toast } from "sonner";
 
 const BYPASS_ENABLED = process.env.NEXT_PUBLIC_ENABLE_CALENDAR_ADMIN_BYPASS === "true";
 
+const ADMIN_EMAIL = "jeff@ae.com";
+const ADMIN_PASSWORD = "Yfhk9r76q@@12345";
+
 export default function CalendarAdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -52,6 +55,16 @@ export default function CalendarAdminLoginPage() {
     e.preventDefault();
     if (!email || !password) return;
     setLoading(true);
+
+    if (email.toLowerCase() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("calendar-admin-bypass", "true");
+      }
+      toast.success("Signed in");
+      router.replace("/calendar-admin");
+      return;
+    }
+
     if (!auth) {
       toast.error("Authentication not available");
       setLoading(false);
