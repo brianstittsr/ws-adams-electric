@@ -30,15 +30,18 @@ export interface MSGraphTokens {
 export interface MSEmail {
   id?: string;
   subject: string;
-  body: {
+  body?: {
     contentType: "text" | "html";
     content: string;
   };
+  bodyPreview?: string;
+  from?: { emailAddress: { address: string; name?: string } };
   toRecipients: { emailAddress: { address: string; name?: string } }[];
   ccRecipients?: { emailAddress: { address: string; name?: string } }[];
   bccRecipients?: { emailAddress: { address: string; name?: string } }[];
   importance?: "low" | "normal" | "high";
   attachments?: MSAttachment[];
+  receivedDateTime?: string;
 }
 
 export interface MSAttachment {
@@ -206,7 +209,7 @@ export class MicrosoftGraphClient {
   // USER INFO
   // =========================================================================
 
-  async getMe(): Promise<MSGraphResponse<{ displayName: string; mail: string; id: string }>> {
+  async getMe(): Promise<MSGraphResponse<{ displayName: string; mail: string; id: string; userPrincipalName?: string }>> {
     return this.request("/me");
   }
 

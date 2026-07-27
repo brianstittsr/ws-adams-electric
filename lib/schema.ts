@@ -1371,6 +1371,36 @@ export interface SiteCalendarItemDoc {
   updatedAt: Timestamp;
 }
 
+/** Microsoft Graph token storage per user */
+export interface UserMicrosoftTokenDoc {
+  id: string;
+  userId: string;
+  email: string;
+  displayName?: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresAt: Timestamp;
+  scopes: string[];
+  status: "connected" | "disconnected" | "error";
+  lastVerifiedAt?: Timestamp;
+  lastError?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+/** Chat channel connections for a user (Telegram + Teams) */
+export interface UserChatChannelDoc {
+  id: string;
+  userId: string;
+  telegramChatId?: string;
+  telegramUsername?: string;
+  teamsConversationId?: string;
+  teamsUserEmail?: string;
+  preferredChannel?: "telegram" | "teams" | "both";
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 /** 1-to-1 Scheduling Queue Item */
 export interface OneToOneQueueItemDoc {
   id: string;
@@ -2125,6 +2155,9 @@ export const COLLECTIONS = {
   // Software License Keys
   SOFTWARE_KEYS: "softwareKeys",
   KEY_ACTIVATIONS: "keyActivations",
+  // Mail / Chat Channel Integration
+  USER_MICROSOFT_TOKENS: "userMicrosoftTokens",
+  USER_CHAT_CHANNELS: "userChatChannels",
   // White-Label Deployments
   WHITE_LABEL_DEPLOYMENTS: "whiteLabelDeployments",
   DEPLOYMENT_ANALYTICS: "deploymentAnalytics",
@@ -2221,6 +2254,10 @@ export const successStoriesCollection = () => getCollection<SuccessStoryDoc>(COL
 // Site Calendars collection references
 export const siteCalendarsCollection = () => getCollection<SiteCalendarDoc>(COLLECTIONS.SITECALENDARS);
 export const siteCalendarItemsCollection = () => getCollection<SiteCalendarItemDoc>(COLLECTIONS.SITECALENDARITEMS);
+
+// Mail / Chat channel collection references
+export const userMicrosoftTokensCollection = () => getCollection<UserMicrosoftTokenDoc>(COLLECTIONS.USER_MICROSOFT_TOKENS);
+export const userChatChannelsCollection = () => getCollection<UserChatChannelDoc>(COLLECTIONS.USER_CHAT_CHANNELS);
 
 // ============================================================================
 // Subcollection Helpers

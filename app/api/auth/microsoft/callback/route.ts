@@ -6,10 +6,11 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { exchangeMicrosoftCode, MSGraphConfig, TRACTION_MS_SCOPES } from "@/lib/microsoft-graph";
+import { exchangeMicrosoftCode, MSGraphConfig, TRACTION_MS_SCOPES, MicrosoftGraphClient } from "@/lib/microsoft-graph";
 import { doc, setDoc, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { COLLECTIONS } from "@/lib/schema";
+import { encryptToken } from "@/lib/mail/token-crypto";
 
 // Get Microsoft config from environment
 function getMicrosoftConfig(): MSGraphConfig | null {
@@ -82,21 +83,39 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Store tokens in Firestore (encrypted in production)
+    // Fetch Microsoft profile to get email/display name
+    let msEmail = "";
+    let msDisplayName = "";
+    const graphClient = new MicrosoftGraphClient(result.data.accessToken);
+    const profileResult = await graphClient.getMe();
+    if (profileResult.success && profileResult.data) {
+      msEmail = profileResult.data.mail || profileResult.data.userPrincipalName || "";
+      msDisplayName = profileResult.data.displayName || "";
+    }
+
+    // Store tokens in per-user collection (encrypted when key is configured)
     if (db) {
       await setDoc(
-        doc(db, COLLECTIONS.PLATFORM_SETTINGS, `microsoft_tokens_${userId}`),
+        doc(db, COLLECTIONS.USER_MICROSOFT_TOKENS, userId),
         {
-          accessToken: result.data.accessToken,
-          refreshToken: result.data.refreshToken,
-          expiresAt: result.data.expiresAt,
-          connectedAt: Timestamp.now(),
-          provider: "microsoft",
+          id: userId,
+          userId,
+          email: msEmail,
+          displayName: msDisplayName,
+          accessToken: encryptToken(result.data.accessToken),
+          refreshToken: encryptToken(result.data.refreshToken || ""),
+          expiresAt: Timestamp.fromMillis(result.data.expiresAt),
+          scopes: TRACTION_MS_SCOPES,
+          status: "connected",
+          lastVerifiedAt: Timestamp.now(),
+          lastError: "",
+          createdAt: Timestamp.now(),
+          updatedAt: Timestamp.now(),
         },
         { merge: true }
       );
 
-      // Update integration status
+      // Keep a backward-compatible integration flag for the settings page
       await setDoc(
         doc(db, COLLECTIONS.PLATFORM_SETTINGS, "default"),
         {

@@ -58,6 +58,7 @@ import {
   ChevronDown,
   ChevronRight,
   Sparkles,
+  Mail,
   Handshake,
   DollarSign,
   User,
@@ -154,6 +155,12 @@ const adminItems: { title: string; href: string; icon: React.ElementType; badge?
     href: "/portal/admin/page-designer",
     icon: Paintbrush,
     featureKey: "pageDesigner",
+  },
+  {
+    title: "Mail",
+    href: "/portal/admin/mail",
+    icon: Mail,
+    featureKey: "mailAdmin",
   },
 ];
 
