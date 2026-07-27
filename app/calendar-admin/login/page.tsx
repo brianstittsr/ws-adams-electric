@@ -13,6 +13,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 
+const BYPASS_ENABLED = process.env.NEXT_PUBLIC_ENABLE_CALENDAR_ADMIN_BYPASS === "true";
+
 export default function CalendarAdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -21,7 +23,14 @@ export default function CalendarAdminLoginPage() {
   const [checking, setChecking] = useState(true);
 
   useEffect(() => {
-    if (!auth) return;
+    if (typeof window !== "undefined" && localStorage.getItem("calendar-admin-bypass") === "true") {
+      router.replace("/calendar-admin");
+      return;
+    }
+    if (!auth) {
+      setChecking(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         router.replace("/calendar-admin");
@@ -31,6 +40,13 @@ export default function CalendarAdminLoginPage() {
     });
     return () => unsubscribe();
   }, [router]);
+
+  function handleBypass() {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("calendar-admin-bypass", "true");
+    toast.success("Bypassed login");
+    router.replace("/calendar-admin");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -120,6 +136,16 @@ export default function CalendarAdminLoginPage() {
                   </>
                 )}
               </Button>
+              {BYPASS_ENABLED && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={handleBypass}
+                >
+                  Bypass Login
+                </Button>
+              )}
             </form>
           </CardContent>
         </Card>
