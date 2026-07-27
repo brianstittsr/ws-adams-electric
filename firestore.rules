@@ -833,12 +833,12 @@ service cloud.firestore {
     // =========================================================================
 
     match /siteCalendars/{siteId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow create, update, delete: if isAuthenticated();
     }
 
     match /siteCalendarItems/{itemId} {
-      allow read: if isAuthenticated();
+      allow read: if true;
       allow create, update, delete: if isAuthenticated();
     }
 
