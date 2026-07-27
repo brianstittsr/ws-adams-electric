@@ -1,20 +1,54 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { db } from "@/lib/firebase";
 import { COLLECTIONS, type SiteCalendarDoc, type SiteCalendarItemDoc } from "@/lib/schema";
 import { doc, getDoc, collection, query, where, orderBy, onSnapshot, Timestamp } from "firebase/firestore";
-import { format, parseISO, isSameDay } from "date-fns";
-import { Loader2, CalendarDays, MapPin } from "lucide-react";
+import {
+  format,
+  isSameDay,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  addMonths,
+  subMonths,
+  isToday,
+  isSameMonth,
+} from "date-fns";
+import { Loader2, MapPin, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+type View = "day" | "agenda";
 
 export default function SiteCalendarDisplayPage() {
   const { slug } = useParams<{ slug: string }>();
   const [site, setSite] = useState<SiteCalendarDoc | null>(null);
   const [items, setItems] = useState<SiteCalendarItemDoc[]>([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<View>("day");
+  const [today, setToday] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [currentMonth, setCurrentMonth] = useState<Date | null>(null);
+
+  useEffect(() => {
+    const now = new Date();
+    setToday(now);
+    setSelectedDate(now);
+    setCurrentMonth(now);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setView((current) => (current === "day" ? "agenda" : "day"));
+    }, 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (!db || !slug) return;
@@ -50,39 +84,42 @@ export default function SiteCalendarDisplayPage() {
     return () => unsubscribe?.();
   }, [slug]);
 
-  if (loading) {
+  const weekDays = useMemo<Date[]>(() => {
+    if (!today) return [];
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      return d;
+    });
+  }, [today]);
+
+  function itemsForDate(date: Date) {
+    return items.filter((item) => isSameDay(item.date.toDate(), date));
+  }
+
+  const miniCalendarDays = useMemo<Date[]>(() => {
+    if (!currentMonth) return [];
+    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 0 });
+    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 0 });
+    return eachDayOfInterval({ start, end });
+  }, [currentMonth]);
+
+  if (loading || !today || !site) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F4F7FA]">
-        <Loader2 className="h-10 w-10 animate-spin text-[#005A9C]" />
+        {loading ? (
+          <Loader2 className="h-10 w-10 animate-spin text-[#005A9C]" />
+        ) : (
+          <p className="text-muted-foreground">Site not found.</p>
+        )}
       </div>
     );
   }
 
-  if (!site) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F4F7FA]">
-        <p className="text-muted-foreground">Site not found.</p>
-      </div>
-    );
-  }
-
-  // Build rolling 7-day view
-  const days: Date[] = [];
-  const today = new Date();
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    days.push(d);
-  }
-
-  const itemsByDay = days.map((day) => ({
-    day,
-    items: items.filter((item) => isSameDay(item.date.toDate(), day)),
-  }));
+  const selectedItems = selectedDate ? itemsForDate(selectedDate) : [];
 
   return (
     <div className="min-h-screen bg-[#F4F7FA] p-6 md:p-10">
-      {/* Admin link */}
       <div className="mb-4">
         <a href="/calendar-admin/login" className="text-sm text-[#005A9C] hover:underline">
           Calendar Admin
@@ -111,41 +148,172 @@ export default function SiteCalendarDisplayPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
-          {itemsByDay.map(({ day, items: dayItems }, idx) => (
-            <motion.div
-              key={day.toISOString()}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
-            >
-              <div className="bg-[#005A9C] text-white p-4 text-center">
-                <div className="text-sm uppercase tracking-wide">{format(day, "EEE")}</div>
-                <div className="text-2xl font-bold">{format(day, "d")}</div>
-                <div className="text-xs opacity-90">{format(day, "MMM")}</div>
-              </div>
-              <div className="p-3 space-y-3 min-h-[200px]">
-                {dayItems.length === 0 ? (
-                  <p className="text-xs text-muted-foreground text-center py-6">No events</p>
-                ) : (
-                  dayItems.map((item) => (
-                    <div key={item.id} className="bg-[#F4F7FA] rounded-lg p-3">
-                      <div className="font-semibold text-sm text-[#003A65]">{item.title}</div>
-                      {item.time && (
-                        <div className="text-xs text-[#005A9C] font-medium mt-1 flex items-center gap-1">
-                          <CalendarDays className="h-3 w-3" /> {item.time}
-                        </div>
-                      )}
-                      {item.description && (
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>
+        <div className="relative min-h-[600px]">
+          <AnimatePresence mode="wait">
+            {view === "day" ? (
+              <motion.div
+                key="day"
+                initial={{ opacity: 0, x: -30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 30 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 lg:col-span-1">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-lg font-bold text-[#003A65]">
+                        {currentMonth ? format(currentMonth, "MMMM yyyy") : ""}
+                      </h2>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => currentMonth && setCurrentMonth(subMonths(currentMonth, 1))}
+                          aria-label="Previous month"
+                        >
+                          <ChevronLeft className="h-5 w-5 text-[#005A9C]" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => currentMonth && setCurrentMonth(addMonths(currentMonth, 1))}
+                          aria-label="Next month"
+                        >
+                          <ChevronRight className="h-5 w-5 text-[#005A9C]" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium text-muted-foreground mb-2">
+                      {["S", "M", "T", "W", "T", "F", "S"].map((label) => (
+                        <div key={label}>{label}</div>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-7 gap-1">
+                      {miniCalendarDays.map((day) => {
+                        const selected = selectedDate ? isSameDay(day, selectedDate) : false;
+                        const todayFlag = isToday(day);
+                        const inMonth = currentMonth ? isSameMonth(day, currentMonth) : false;
+                        const dayItems = itemsForDate(day);
+                        return (
+                          <button
+                            key={day.toISOString()}
+                            onClick={() => setSelectedDate(day)}
+                            className={cn(
+                              "aspect-square rounded-lg flex flex-col items-center justify-center relative text-sm transition-colors",
+                              !inMonth && "text-muted-foreground/40",
+                              todayFlag && !selected && "bg-accent text-accent-foreground",
+                              selected && "bg-[#005A9C] text-white shadow"
+                            )}
+                            aria-label={format(day, "MMMM d, yyyy")}
+                          >
+                            <span>{format(day, "d")}</span>
+                            {dayItems.length > 0 && (
+                              <span
+                                className={cn(
+                                  "absolute bottom-1 h-1.5 w-1.5 rounded-full",
+                                  selected ? "bg-white" : "bg-[#005A9C]"
+                                )}
+                                aria-hidden="true"
+                              />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <h2 className="text-2xl font-bold text-[#003A65] mb-4">
+                      {selectedDate ? format(selectedDate, "EEEE, MMMM d") : ""}
+                    </h2>
+                    <div className="space-y-4">
+                      {selectedItems.length === 0 ? (
+                        <p className="text-muted-foreground">No events for this day.</p>
+                      ) : (
+                        selectedItems.map((item) => (
+                          <div key={item.id} className="bg-[#F4F7FA] rounded-lg p-4 border-l-4 border-[#005A9C]">
+                            <div className="font-bold text-lg text-[#003A65]">{item.title}</div>
+                            {item.time && (
+                              <div className="text-sm text-[#005A9C] font-medium mt-1 flex items-center gap-1">
+                                <Clock className="h-4 w-4" /> {item.time}
+                              </div>
+                            )}
+                            {item.description && (
+                              <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{item.description}</p>
+                            )}
+                          </div>
+                        ))
                       )}
                     </div>
-                  ))
-                )}
-              </div>
-            </motion.div>
-          ))}
+                  </div>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="agenda"
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.5 }}
+                className="space-y-4"
+              >
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h2 className="text-2xl font-bold text-[#003A65] mb-6">Weekly Agenda</h2>
+                  <div className="space-y-6">
+                    {weekDays.map((day) => {
+                      const dayItems = itemsForDate(day);
+                      return (
+                        <div key={day.toISOString()} className="border-b border-gray-100 last:border-0 pb-6 last:pb-0">
+                          <h3 className="text-lg font-bold text-[#005A9C] mb-3">
+                            {format(day, "EEEE, MMMM d")}
+                          </h3>
+                          <div className="space-y-3">
+                            {dayItems.length === 0 ? (
+                              <p className="text-sm text-muted-foreground">No events scheduled.</p>
+                            ) : (
+                              dayItems.map((item) => (
+                                <div key={item.id} className="bg-[#F4F7FA] rounded-lg p-4">
+                                  <div className="font-bold text-[#003A65]">{item.title}</div>
+                                  {item.time && (
+                                    <div className="text-sm text-[#005A9C] font-medium mt-1 flex items-center gap-1">
+                                      <Clock className="h-4 w-4" /> {item.time}
+                                    </div>
+                                  )}
+                                  {item.description && (
+                                    <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">{item.description}</p>
+                                  )}
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        <div className="flex justify-center gap-2 mt-6">
+          <button
+            onClick={() => setView("day")}
+            className={cn(
+              "h-2.5 w-2.5 rounded-full transition-colors",
+              view === "day" ? "bg-[#005A9C]" : "bg-[#005A9C]/30"
+            )}
+            aria-label="Show day view"
+          />
+          <button
+            onClick={() => setView("agenda")}
+            className={cn(
+              "h-2.5 w-2.5 rounded-full transition-colors",
+              view === "agenda" ? "bg-[#005A9C]" : "bg-[#005A9C]/30"
+            )}
+            aria-label="Show agenda view"
+          />
         </div>
       </motion.div>
     </div>
