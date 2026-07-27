@@ -1340,6 +1340,37 @@ export interface CalendarEventDoc {
   updatedAt: Timestamp;
 }
 
+/** Site Calendar (safety office / job site display calendar) */
+export interface SiteCalendarDoc {
+  id: string;
+  name: string;
+  slug: string;
+  pin: string;
+  logoUrl?: string;
+  primaryColor?: string;
+  defaultLayout: "vertical" | "horizontal" | "agenda" | "month";
+  weekStartDay?: number;
+  weekEndDay?: number;
+  isActive: boolean;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+/** Site Calendar Item (event/task displayed on a safety office TV) */
+export interface SiteCalendarItemDoc {
+  id: string;
+  siteId: string;
+  title: string;
+  description?: string;
+  date: Timestamp;
+  time?: string;
+  location?: string;
+  assignee?: string;
+  order: number;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 /** 1-to-1 Scheduling Queue Item */
 export interface OneToOneQueueItemDoc {
   id: string;
@@ -2080,6 +2111,9 @@ export const COLLECTIONS = {
   GHL_IMPORTED_WORKFLOWS: "ghlImportedWorkflows",
   // Calendar Events (built-in calendar)
   CALENDAR_EVENTS: "calendarEvents",
+  // Site Calendars (safety office / job site TV displays)
+  SITECALENDARS: "siteCalendars",
+  SITECALENDARITEMS: "siteCalendarItems",
   // 1-to-1 Scheduling Queue
   ONE_TO_ONE_QUEUE: "oneToOneQueue",
   // Team Member Availability & Bookings
@@ -2183,6 +2217,10 @@ export const bugTrackerItemsCollection = () => getCollection<BugTrackerItemDoc>(
 
 // Success Stories collection reference
 export const successStoriesCollection = () => getCollection<SuccessStoryDoc>(COLLECTIONS.SUCCESS_STORIES);
+
+// Site Calendars collection references
+export const siteCalendarsCollection = () => getCollection<SiteCalendarDoc>(COLLECTIONS.SITECALENDARS);
+export const siteCalendarItemsCollection = () => getCollection<SiteCalendarItemDoc>(COLLECTIONS.SITECALENDARITEMS);
 
 // ============================================================================
 // Subcollection Helpers

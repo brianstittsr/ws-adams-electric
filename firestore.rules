@@ -829,6 +829,20 @@ service cloud.firestore {
     }
 
     // =========================================================================
+    // Site Calendars (safety office / job site TV displays)
+    // =========================================================================
+
+    match /siteCalendars/{siteId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
+    }
+
+    match /siteCalendarItems/{itemId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated();
+    }
+
+    // =========================================================================
     // DEVELOPMENT CATCH-ALL RULE
     // This allows access to any collection not explicitly defined above
     // TODO: Remove this rule in production!
