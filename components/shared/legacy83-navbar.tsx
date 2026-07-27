@@ -13,6 +13,7 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { usePathname } from "next/navigation";
 import {
   Menu,
   Target,
@@ -69,6 +70,8 @@ const resources = [
 
 export function Legacy83Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+  const isHome = pathname === "/";
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background">
@@ -76,10 +79,10 @@ export function Legacy83Navbar() {
         {/* Logo */}
         <Link href="/" className="flex items-center">
           <Image
-            src="/legacy83Logo.webp"
-            alt="Legacy 83 Business Inc"
-            width={180}
-            height={60}
+            src={isHome ? "/images/adamselectric_logo.png" : "/legacy83Logo.webp"}
+            alt={isHome ? "Adams Electric" : "Legacy 83 Business Inc"}
+            width={isHome ? 200 : 180}
+            height={isHome ? 60 : 60}
             className="h-12 w-auto"
             priority
           />
