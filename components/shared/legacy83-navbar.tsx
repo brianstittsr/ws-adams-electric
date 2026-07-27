@@ -85,6 +85,7 @@ export function Legacy83Navbar() {
             height={isHome ? 60 : 60}
             className="h-12 w-auto"
             priority
+            unoptimized={isHome}
           />
         </Link>
 

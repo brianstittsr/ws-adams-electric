@@ -122,6 +122,7 @@ export function SiteChooser() {
                 height={140}
                 className="relative z-10 object-contain mix-blend-multiply"
                 priority
+                unoptimized
               />
             </motion.div>
           </motion.div>
@@ -150,6 +151,7 @@ export function SiteChooser() {
                 height={100}
                 className="object-contain"
                 priority
+                unoptimized
               />
             </motion.div>
             <h1 className="text-3xl md:text-4xl font-bold text-[#003A65] mb-3">
