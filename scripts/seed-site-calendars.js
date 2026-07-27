@@ -78,7 +78,7 @@ async function seedSiteCalendars() {
     batch.set(siteRef, {
       name: site.name,
       slug,
-      pin: "0000",
+      pin: "1234",
       logoUrl: "/images/adamselectric_logo.png",
       primaryColor: "#005A9C",
       defaultLayout: "vertical",
@@ -86,7 +86,7 @@ async function seedSiteCalendars() {
       createdAt: now,
       updatedAt: now,
     });
-    console.log(`  ✓ Queued site "${site.name}" (PIN: 0000)`);
+    console.log(`  ✓ Queued site "${site.name}" (PIN: 1234)`);
   }
 
   await batch.commit();
