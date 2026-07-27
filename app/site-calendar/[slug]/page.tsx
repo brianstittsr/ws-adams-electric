@@ -23,7 +23,7 @@ import {
 import { Loader2, MapPin, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { SiteCalendarPasswordGate } from "./password-gate";
+import { PasswordGate } from "@/components/shared/password-gate";
 
 type View = "day" | "agenda";
 
@@ -47,7 +47,7 @@ export default function SiteCalendarDisplayPage() {
 
   useEffect(() => {
     if (typeof window === "undefined" || !slug) return;
-    if (localStorage.getItem(`site-calendar-auth-${slug}`) === "true") {
+    if (localStorage.getItem(`password-gate-auth-${slug}`) === "true") {
       setAuthenticated(true);
     }
   }, [slug]);
@@ -116,9 +116,11 @@ export default function SiteCalendarDisplayPage() {
 
   if (!authenticated) {
     return (
-      <SiteCalendarPasswordGate
-        slug={slug}
+      <PasswordGate
+        storageKey={slug}
         siteName={site?.name}
+        title="Calendar Access"
+        subtitle="Enter the credentials to view the safety office calendar."
         onAuthenticated={() => setAuthenticated(true)}
       />
     );

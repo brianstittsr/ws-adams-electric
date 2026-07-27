@@ -11,19 +11,23 @@ import { Loader2, Lock } from "lucide-react";
 import { toast } from "sonner";
 
 interface PasswordGateProps {
-  slug: string;
+  storageKey: string;
   siteName?: string | null;
+  title?: string;
+  subtitle?: string;
   onAuthenticated: () => void;
 }
 
 const GATE_EMAIL = "jeff@ae.com";
 const GATE_PASSWORD = "Yfhk9r76q@@12345";
 
-function getStorageKey(slug: string) {
-  return `site-calendar-auth-${slug}`;
-}
-
-export function SiteCalendarPasswordGate({ slug, siteName, onAuthenticated }: PasswordGateProps) {
+export function PasswordGate({
+  storageKey,
+  siteName,
+  title = "Calendar Access",
+  subtitle = "Enter the credentials to continue.",
+  onAuthenticated,
+}: PasswordGateProps) {
   const [phase, setPhase] = useState<"splash" | "login">("splash");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -40,7 +44,7 @@ export function SiteCalendarPasswordGate({ slug, siteName, onAuthenticated }: Pa
 
     window.setTimeout(() => {
       if (email === GATE_EMAIL && password === GATE_PASSWORD) {
-        localStorage.setItem(getStorageKey(slug), "true");
+        localStorage.setItem(`password-gate-auth-${storageKey}`, "true");
         onAuthenticated();
       } else {
         toast.error("Invalid email or password");
@@ -78,7 +82,9 @@ export function SiteCalendarPasswordGate({ slug, siteName, onAuthenticated }: Pa
             {siteName && (
               <h1 className="mt-6 text-2xl md:text-3xl font-bold text-[#003A65]">{siteName}</h1>
             )}
-            <p className="mt-2 text-muted-foreground text-sm">Safety Office Calendar</p>
+            {subtitle && (
+              <p className="mt-2 text-muted-foreground text-sm">{subtitle}</p>
+            )}
           </motion.div>
         ) : (
           <motion.div
@@ -101,8 +107,8 @@ export function SiteCalendarPasswordGate({ slug, siteName, onAuthenticated }: Pa
                     priority
                   />
                 </div>
-                <CardTitle className="text-2xl text-[#003A65]">Calendar Access</CardTitle>
-                <CardDescription>Enter the credentials to view the safety office calendar.</CardDescription>
+                <CardTitle className="text-2xl text-[#003A65]">{title}</CardTitle>
+                <CardDescription>{subtitle}</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
